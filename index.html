@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulir Pendaftaran SMP Al-Hikam</title>
+    <style>
+        /* === 1. Tampilan Input (Layar Monitor) === */
+        body { font-family: Arial, sans-serif; background-color: #eee; margin: 0; padding: 20px; }
+        .input-container { background: white; max-width: 800px; margin: 0 auto; padding: 30px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { text-align: center; margin-top: 0; color: #333; }
+        .form-group { margin-bottom: 12px; }
+        label { display: block; font-weight: bold; font-size: 13px; margin-bottom: 4px; }
+        input, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        
+        .btn-print {
+            width: 100%; padding: 15px; background: #007bff; color: white; border: none; 
+            font-size: 16px; font-weight: bold; border-radius: 4px; cursor: pointer; margin-top: 20px;
+        }
+        .btn-print:hover { background: #0069d9; }
+
+        /* === 2. Tampilan Cetak (Print View - Kertas A4) === */
+        #print-area {
+            display: none;
+            background: white;
+            width: 210mm; height: 297mm; /* Ukuran A4 */
+            padding: 10mm 15mm;
+            box-sizing: border-box;
+            font-family: "Times New Roman", Times, serif;
+            color: black;
+        }
+
+        /* Kop Surat */
+        .kop-surat { 
+            text-align: center; 
+            border-bottom: 3px double black; 
+            padding-bottom: 10px; 
+            margin-bottom: 10px; 
+            position: relative; 
+            min-height: 100px; /* Menjaga tinggi kop agar logo muat */
+        }
+        
+        /* Pengaturan Logo */
+        .kop-img { 
+            position: absolute; 
+            left: 0;  
+            width: auto; /* Ukuran logo disesuaikan */
+            height: 120px;
+            top: 50%
+            transform: translateY(-50%); 
+        }
+        
+        .kop-text h3 { font-size: 14pt; margin: 0; font-weight: normal; }
+        .kop-text h4 { font-size: 16pt; margin: 0; font-weight: bold; }
+        .kop-text p { font-size: 10pt; margin: 2px 0; }
+
+        .form-title { text-align: center; font-weight: bold; font-size: 12pt; margin: 10px 0; text-transform: uppercase; text-decoration: underline; }
+        .section-header { font-weight: bold; margin-top: 8px; margin-bottom: 2px; text-transform: uppercase; font-size: 11pt; }
+
+        /* Layout Tabel Agar Rapi (Tab Lurus) */
+        .print-table { width: 100%; border-collapse: collapse; }
+        .print-table td { vertical-align: top; padding-bottom: 4px; font-size: 11pt; }
+        
+        /* Lebar Kolom Label dikunci agar titik dua lurus */
+        .col-label { width: 165px; min-width: 165px; white-space: nowrap; }
+        .col-colon { width: 15px; text-align: center; }
+        .col-input { width: auto; } 
+
+        /* Desain Kotak Karakter */
+        .box-container { display: inline-flex; }
+        .char-box {
+            width: 18px; height: 20px; 
+            border: 1px solid black; border-right: none; 
+            display: flex; align-items: center; justify-content: center;
+            font-family: Arial, sans-serif; font-size: 10pt; font-weight: bold; text-transform: uppercase;
+            background: white;
+        }
+        .char-box:last-child { border-right: 1px solid black; } 
+
+        /* Checkbox Pilihan */
+        .check-group { 
+            display: flex; flex-wrap: wrap; gap: 10px 15px; align-items: center; 
+        }
+        .check-item { display: flex; align-items: center; font-size: 10pt; }
+        .box-check {
+            width: 14px; height: 14px; border: 1px solid black; margin-right: 4px;
+            display: flex; align-items: center; justify-content: center; font-size: 9pt; font-weight: bold;
+        }
+
+        /* Footer / Tanda Tangan */
+        .footer-ttd { margin-top: 20px; display: flex; justify-content: space-between; font-size: 11pt; }
+        .notes { font-size: 9pt; }
+        .notes ul { padding-left: 20px; margin: 0; }
+        .ttd-area { text-align: center; width: 220px; }
+
+        /* Mode Cetak */
+        @media print {
+            body { background: white; margin: 0; padding: 0; }
+            .input-container { display: none; }
+            #print-area { display: block; }
+            @page { size: A4; margin: 10mm; }
+        }
+
+        /* --- TAMBAHAN CSS FOOTER PETUNJUK --- */
+        .info-box {
+            margin-top: 25px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border: 1px dashed #aaa;
+            border-radius: 5px;
+            font-size: 14px;
+            color: #444;
+        }
+        .info-box ol {
+            margin: 5px 0 15px 0;
+            padding-left: 20px;
+        }
+        .info-box li {
+            margin-bottom: 5px;
+        }
+        .btn-wa {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: #25D366; /* Warna Hijau WA */
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .btn-wa:hover {
+            background-color: #128C7E;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="input-container">
+        <h2>E-Form SMP Al-Hikam</h2>
+        <form id="schoolForm">
+            <div class="form-group"><label>Nama Lengkap:</label><input type="text" id="in_nama" maxlength="28"></div>
+            <div class="form-group"><label>Jenis Kelamin:</label>
+                <select id="in_jk"><option value="">Pilih</option><option value="L">Laki-laki</option><option value="P">Perempuan</option></select>
+            </div>
+            
+            <div style="display:flex; gap:10px;">
+                <div class="form-group" style="flex:1"><label>Tempat Lahir:</label><input type="text" id="in_tempat_lahir"></div>
+                
+                <div class="form-group" style="flex:1">
+                    <label>Tanggal Lahir:</label>
+                    <div style="display: flex; gap: 5px;">
+                        <select id="in_tgl" style="flex: 1;"></select>
+                        <select id="in_bln" style="flex: 2;"></select>
+                        <select id="in_thn" style="flex: 1.5;"></select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group"><label>Agama:</label><input type="text" id="in_agama" value="ISLAM"></div>
+            <div class="form-group"><label>NISN:</label><input type="text" id="in_nisn" maxlength="10" placeholder="10 digit"></div>
+            <div class="form-group"><label>No. KK:</label><input type="text" id="in_kk" maxlength="16" placeholder="16 digit"></div>
+            
+            <div class="form-group"><label>Alamat Lengkap:</label><input type="text" id="in_alamat" placeholder="Nama Jalan/Dusun, RT/RW, Desa/Kelurahan"></div>
+            <div class="form-group"><label>Kecamatan:</label><input type="text" id="in_kecamatan"></div>
+            <div class="form-group"><label>Kabupaten:</label><input type="text" id="in_kabupaten"></div>
+            <div class="form-group"><label>Sekolah Asal:</label><input type="text" id="in_sekolah_asal"></div>
+
+            <hr>
+            <h3>Data Orang Tua</h3>
+            <div class="form-group"><label>Nama Ayah:</label><input type="text" id="in_nama_ayah"></div>
+            
+            <div class="form-group"><label>Pendidikan Ayah:</label>
+                <select id="in_pend_ayah">
+                    <option value="">Pilih</option>
+                    <option value="SD">SD/Sederajat</option>
+                    <option value="SMP">SMP/Sederajat</option>
+                    <option value="SMA">SMA/Sederajat</option>
+                    <option value="D1">D1</option><option value="D2">D2</option><option value="D3">D3</option>
+                    <option value="S1">S1</option><option value="S2">S2</option><option value="S3">S3</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Pekerjaan Ayah:</label>
+                <select id="in_pek_ayah" onchange="toggleLainnya(this)">
+                    <option value="">Pilih</option>
+                    <option value="Petani">Petani</option>
+                    <option value="Nelayan">Nelayan</option>
+                    <option value="Guru">Guru</option>
+                    <option value="PNS">PNS/TNI/Polri</option>
+                    <option value="Swasta">Karyawan Swasta</option>
+                    <option value="Wirausaha">Wirausaha/Wiraswasta</option>
+                    <option value="Buruh">Buruh</option>
+                    <option value="Lainnya">Lainnya</option>
+                </select>
+                <input type="text" id="in_pek_ayah_lain" placeholder="Sebutkan pekerjaan..." style="display:none; margin-top:5px; border: 1px dashed #666;">
+            </div>
+            
+            <div class="form-group">
+                <label>Alamat Lengkap Orang Tua:</label>
+                <input type="text" id="in_alamat_ortu" placeholder="RT/RW, Desa/Kelurahan, Kecamatan, Kabupaten">
+            </div>
+            
+            <div class="form-group"><label>Nama Ibu:</label><input type="text" id="in_nama_ibu"></div>
+             <div class="form-group"><label>Pendidikan Ibu:</label>
+                <select id="in_pend_ibu">
+                    <option value="">Pilih</option>
+                    <option value="SD">SD/Sederajat</option>
+                    <option value="SMP">SMP/Sederajat</option>
+                    <option value="SMA">SMA/Sederajat</option>
+                    <option value="D1">D1</option><option value="D2">D2</option><option value="D3">D3</option>
+                    <option value="S1">S1</option><option value="S2">S2</option><option value="S3">S3</option>
+                </select>
+            </div>
+            <div class="form-group"><label>No. HP:</label><input type="text" id="in_hp"></div>
+        </form>
+
+        <button class="btn-print" onclick="preparePrint()">SIMPAN/CETAK FORMULIR</button>
+
+        <div class="info-box">
+            <strong>PETUNJUK:</strong>
+            <ol>
+                <li>Nama file PDF otomatis tersimpan dengan <b>Nama Lengkap Calon Siswa</b>.</li>
+                <li>Setelah file tersimpan, kirimkan file PDF tersebut ke Panitia SPMB.</li>
+            </ol>
+            
+            <a href="https://wa.me/6281906522647?text=Assalamualaikum,%20saya%20ingin%20mengirimkan%20formulir%20pendaftaran." target="_blank" class="btn-wa">
+                KIRIM FORMULIR
+            </a>
+        </div>
+    </div>
+
+    <div id="print-area">
+        <div class="kop-surat">
+            <img src="logo.png" alt="Logo SMP Al-Hikam" class="kop-img">
+            
+            <div class="kop-text">
+                <h3>PEMERINTAH KABUPATEN LAMPUNG TENGAH</h3>
+                <h3>DINAS PENDIDIKAN DAN KEBUDAYAAN</h3>
+                <h4>SMP AL-HIKAM</h4>
+                <p>SENDANG MULYO KECAMATAN SENDANG AGUNG</p>
+                <p>Alamat : Dusun 02, RT/RW: 002/002, Kampung Sendang Mulyo</p>
+                <p>Telp. 081541547054 | NPSN: 70015026</p>
+            </div>
+        </div>
+
+        <div class="form-title">FORMULIR PENDAFTARAN SISWA BARU</div>
+
+        <div class="section-header">IDENTITAS CALON SISWA / SISWI</div>
+        
+        <table class="print-table">
+            <tr><td class="col-label">Nama Lengkap</td><td class="col-colon">:</td><td class="col-input"><div class="box-container" id="out_nama"></div></td></tr>
+            <tr>
+                <td class="col-label">Jenis Kelamin*</td><td class="col-colon">:</td>
+                <td class="col-input">
+                    <div class="check-group">
+                        <div class="check-item"><div class="box-check" id="out_jk_l"></div> Laki-laki</div>
+                        <div class="check-item"><div class="box-check" id="out_jk_p"></div> Perempuan</div>
+                    </div>
+                </td>
+            </tr>
+            <tr><td class="col-label">Tempat Lahir</td><td class="col-colon">:</td><td class="col-input"><div class="box-container" id="out_tempat_lahir"></div></td></tr>
+            <tr><td class="col-label">Tanggal Lahir</td><td class="col-colon">:</td><td class="col-input"><div class="box-container" id="out_tgl_lahir"></div></td></tr>
+            <tr><td class="col-label">Agama*</td><td class="col-colon">:</td><td class="col-input"><div class="box-container" id="out_agama"></div></td></tr>
+            
+            <tr><td class="col-label">NISN</td><td class="col-colon">:</td><td class="col-input"><div class="box-container" id="out_nisn"></div></td></tr>
+            <tr><td class="col-label">No. Kartu Keluarga</td><td class="col-colon">:</td><td class="col-input"><div class="box-container" id="out_kk"></div></td></tr>
+            
+            <tr><td class="col-label">Alamat</td><td class="col-colon">:</td><td class="col-input"><div class="box-container" id="out_alamat_1"></div></td></tr>
+            <tr><td class="col-label"></td><td class="col-colon"></td><td class="col-input"><div class="box-container" id="out_alamat_2"></div></td></tr>
+
+            <tr><td class="col-label">Kecamatan</td><td class="col-colon">:</td><td class="col-input"><div class="box-container" id="out_kecamatan"></div></td></tr>
+            <tr><td class="col-label">Kabupaten</td><td class="col-colon">:</td><td class="col-input"><div class="box-container" id="out_kabupaten"></div></td></tr>
+            <tr><td class="col-label">Sekolah Asal</td><td class="col-colon">:</td><td class="col-input"><div class="box-container" id="out_sekolah_asal"></div></td></tr>
+        </table>
+
+        <div class="section-header">IDENTITAS ORANG TUA / WALI</div>
+        
+        <table class="print-table">
+            <tr><td class="col-label">Nama Ayah</td><td class="col-colon">:</td><td class="col-input"><div class="box-container" id="out_nama_ayah"></div></td></tr>
+            
+            <tr>
+                <td class="col-label">Pendidikan Terakhir*</td><td class="col-colon">:</td>
+                <td class="col-input">
+                    <div class="check-group">
+                        <div class="check-item"><div class="box-check" id="out_pa_sd"></div> SD</div>
+                        <div class="check-item"><div class="box-check" id="out_pa_smp"></div> SMP</div>
+                        <div class="check-item"><div class="box-check" id="out_pa_sma"></div> SMA</div>
+                        <div class="check-item"><div class="box-check" id="out_pa_d1"></div> D1</div>
+                        <div class="check-item"><div class="box-check" id="out_pa_d2"></div> D2</div>
+                        <div class="check-item"><div class="box-check" id="out_pa_d3"></div> D3</div>
+                        <div class="check-item"><div class="box-check" id="out_pa_s1"></div> S1</div>
+                        <div class="check-item"><div class="box-check" id="out_pa_s2"></div> S2</div>
+                        <div class="check-item"><div class="box-check" id="out_pa_s3"></div> S3</div>
+                    </div>
+                </td>
+            </tr>
+            
+            <tr>
+                <td class="col-label">Pekerjaan*</td><td class="col-colon">:</td>
+                <td class="col-input">
+                    <div class="check-group">
+                        <div class="check-item"><div class="box-check" id="out_joba_tani"></div> Petani</div>
+                        <div class="check-item"><div class="box-check" id="out_joba_nelayan"></div> Nelayan</div>
+                        <div class="check-item"><div class="box-check" id="out_joba_guru"></div> Guru</div>
+                        <div class="check-item"><div class="box-check" id="out_joba_pns"></div> PNS/TNI/Polri</div>
+                        <div class="check-item"><div class="box-check" id="out_joba_swasta"></div> Swasta</div>
+                        <div class="check-item"><div class="box-check" id="out_joba_wira"></div> Wirausaha</div>
+                        <div class="check-item"><div class="box-check" id="out_joba_buruh"></div> Buruh</div>
+                        
+                        <div class="check-item" style="display:flex; align-items:center;">
+                            <div class="box-check" id="out_joba_lain"></div> Lainnya: 
+                            <div id="out_joba_lain_text" style="margin-left: 5px; min-width: 150px; font-weight: bold; text-transform: uppercase; padding-left: 5px;"></div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            
+            <tr><td class="col-label">Alamat</td><td class="col-colon">:</td><td class="col-input"><div class="box-container" id="out_alamat_ortu_1"></div></td></tr>
+            <tr><td class="col-label"></td><td class="col-colon"></td><td class="col-input"><div class="box-container" id="out_alamat_ortu_2"></div></td></tr>
+            <tr><td class="col-label"></td><td class="col-colon"></td><td class="col-input"><div class="box-container" id="out_alamat_ortu_3"></div></td></tr>
+
+            <tr><td colspan="3" style="height: 5px;"></td></tr>
+
+            <tr><td class="col-label">Nama Ibu</td><td class="col-colon">:</td><td class="col-input"><div class="box-container" id="out_nama_ibu"></div></td></tr>
+            
+            <tr>
+                <td class="col-label">Pendidikan Terakhir*</td><td class="col-colon">:</td>
+                <td class="col-input">
+                    <div class="check-group">
+                        <div class="check-item"><div class="box-check" id="out_pi_sd"></div> SD</div>
+                        <div class="check-item"><div class="box-check" id="out_pi_smp"></div> SMP</div>
+                        <div class="check-item"><div class="box-check" id="out_pi_sma"></div> SMA</div>
+                        <div class="check-item"><div class="box-check" id="out_pi_d1"></div> D1</div>
+                        <div class="check-item"><div class="box-check" id="out_pi_d2"></div> D2</div>
+                        <div class="check-item"><div class="box-check" id="out_pi_d3"></div> D3</div>
+                        <div class="check-item"><div class="box-check" id="out_pi_s1"></div> S1</div>
+                        <div class="check-item"><div class="box-check" id="out_pi_s2"></div> S2</div>
+                        <div class="check-item"><div class="box-check" id="out_pi_s3"></div> S3</div>
+                    </div>
+                </td>
+            </tr>
+             <tr><td class="col-label">No. Hp</td><td class="col-colon">:</td><td class="col-input"><div class="box-container" id="out_hp"></div></td></tr>
+        </table>
+
+        <div class="footer-ttd">
+            <div class="notes">
+                <ul>
+                    <li>Berilah tanda silang (x) pada pilihan yang tersedia.</li>
+                    <li>Jika memilih pekerjaan Lainnya tulis pekerjaan tersebut.</li>
+                    <li>Untuk persyaratan yang lain menyusul.</li>
+                </ul>
+            </div>
+            <div class="ttd-area">
+                <p>Sendang Mulyo, <span id="current_date"></span></p>
+                <p>Orang tua / Wali</p>
+                <br><br><br>
+                <p>( ..................................................... )</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fungsi untuk menampilkan input teks jika 'Lainnya' dipilih
+        function toggleLainnya(selectEl) {
+            var inputLain = document.getElementById('in_pek_ayah_lain');
+            if (selectEl.value === 'Lainnya') {
+                inputLain.style.display = 'block';
+                inputLain.focus();
+            } else {
+                inputLain.style.display = 'none';
+                inputLain.value = ''; // Reset jika batal pilih
+            }
+        }
+        // === LOGIKA PILIHAN TANGGAL ===
+        window.onload = function() {
+            // Tanggal 1-31
+            const tglSel = document.getElementById('in_tgl');
+            let defTgl = document.createElement('option'); defTgl.text = "Tgl"; defTgl.value = ""; tglSel.add(defTgl);
+            for(let i=1; i<=31; i++) {
+                let opt = document.createElement('option');
+                let val = i < 10 ? '0'+i : i;
+                opt.value = val; opt.text = i;
+                tglSel.add(opt);
+            }
+
+            // Bulan
+            const blnSel = document.getElementById('in_bln');
+            const blnNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            let defBln = document.createElement('option'); defBln.text = "Bulan"; defBln.value = ""; blnSel.add(defBln);
+            blnNames.forEach((nm, idx) => {
+                let opt = document.createElement('option');
+                let val = (idx+1) < 10 ? '0'+(idx+1) : (idx+1);
+                opt.value = val; opt.text = nm;
+                blnSel.add(opt);
+            });
+
+            // Tahun (2000 - 2015)
+            const thnSel = document.getElementById('in_thn');
+            let defThn = document.createElement('option'); defThn.text = "Tahun"; defThn.value = ""; thnSel.add(defThn);
+            for(let i=2000; i<=2015; i++) {
+                let opt = document.createElement('option');
+                opt.value = i; opt.text = i;
+                thnSel.add(opt);
+            }
+        };
+
+        // Fungsi membuat kotak karakter
+        function createBoxes(text, elementId, maxLen) {
+            const container = document.getElementById(elementId);
+            container.innerHTML = '';
+            
+            let str = (text || '').toUpperCase();
+            const count = maxLen; 
+
+            for (let i = 0; i < count; i++) {
+                let char = str[i] ? str[i] : ''; 
+                let box = document.createElement('div');
+                box.className = 'char-box';
+                box.innerHTML = char === ' ' ? '&nbsp;' : (char || '&nbsp;'); 
+                container.appendChild(box);
+            }
+        }
+
+        // Fungsi centang checkbox manual
+        function setCheck(targetId, isChecked) {
+            const el = document.getElementById(targetId);
+            if(el) el.innerHTML = isChecked ? "X" : "";
+        }
+
+        // Fungsi Utama Print
+        function preparePrint() {
+            var namaSiswa = document.getElementById('in_nama').value;
+            if (namaSiswa) {
+                document.title = namaSiswa; // Nama file PDF akan mengikuti ini
+            } else {
+                document.title = "Formulir_Pendaftaran_Siswa"; // Nama default jika kosong
+            }
+            // === KONFIGURASI JUMLAH KOTAK ===
+            const MAX_LONG = 28;  
+            const MAX_SHORT = 20; 
+            const MAX_NISN = 10;
+            const MAX_KK = 16;
+            const MAX_HP = 15;
+
+            // 1. Data Siswa
+            createBoxes(document.getElementById('in_nama').value, 'out_nama', MAX_LONG);
+            createBoxes(document.getElementById('in_tempat_lahir').value, 'out_tempat_lahir', MAX_LONG);
+            
+            // LOGIKA GABUNG TANGGAL: "01 JANUARI 2010"
+            let tgl = document.getElementById('in_tgl').value;
+            let thn = document.getElementById('in_thn').value;
+            let blnSelect = document.getElementById('in_bln');
+            let blnText = "";
+            if (blnSelect.selectedIndex > 0) {
+                blnText = blnSelect.options[blnSelect.selectedIndex].text;
+            }
+            let fullDate = "";
+            if (tgl && blnText && thn) {
+                fullDate = tgl + " " + blnText + " " + thn;
+            }
+            createBoxes(fullDate, 'out_tgl_lahir', MAX_SHORT);
+
+            createBoxes(document.getElementById('in_agama').value, 'out_agama', MAX_SHORT);
+            createBoxes(document.getElementById('in_nisn').value, 'out_nisn', MAX_NISN);
+            createBoxes(document.getElementById('in_kk').value, 'out_kk', MAX_KK);
+            createBoxes(document.getElementById('in_kecamatan').value, 'out_kecamatan', MAX_LONG);
+            createBoxes(document.getElementById('in_kabupaten').value, 'out_kabupaten', MAX_LONG);
+            createBoxes(document.getElementById('in_sekolah_asal').value, 'out_sekolah_asal', MAX_LONG);
+            
+            // Alamat Split
+            let alamat = document.getElementById('in_alamat').value.toUpperCase();
+            let limit = MAX_LONG; 
+            let alamat1 = alamat.substring(0, limit);
+            let alamat2 = alamat.substring(limit, limit*2);
+            createBoxes(alamat1, 'out_alamat_1', MAX_LONG);
+            createBoxes(alamat2, 'out_alamat_2', MAX_LONG);
+
+            // 2. Data Ortu
+            createBoxes(document.getElementById('in_nama_ayah').value, 'out_nama_ayah', MAX_LONG);
+            createBoxes(document.getElementById('in_nama_ibu').value, 'out_nama_ibu', MAX_LONG);
+            createBoxes(document.getElementById('in_hp').value, 'out_hp', MAX_HP);
+
+            let alamatOrtu = document.getElementById('in_alamat_ortu').value.toUpperCase();
+            let alamatOrtu1 = alamatOrtu.substring(0, limit);
+            let alamatOrtu2 = alamatOrtu.substring(limit, limit*2);
+            let alamatOrtu3 = alamatOrtu.substring(limit*2, limit*3);
+            createBoxes(alamatOrtu1, 'out_alamat_ortu_1', MAX_LONG);
+            createBoxes(alamatOrtu2, 'out_alamat_ortu_2', MAX_LONG);
+            createBoxes(alamatOrtu3, 'out_alamat_ortu_3', MAX_LONG);
+
+            // 3. Pilihan (Checklist)
+            let jk = document.getElementById('in_jk').value;
+            setCheck('out_jk_l', jk === 'L');
+            setCheck('out_jk_p', jk === 'P');
+
+            // Pendidikan Ayah
+            let pendAyah = document.getElementById('in_pend_ayah').value;
+            setCheck('out_pa_sd', pendAyah === 'SD');
+            setCheck('out_pa_smp', pendAyah === 'SMP');
+            setCheck('out_pa_sma', pendAyah === 'SMA');
+            setCheck('out_pa_d1', pendAyah === 'D1');
+            setCheck('out_pa_d2', pendAyah === 'D2');
+            setCheck('out_pa_d3', pendAyah === 'D3');
+            setCheck('out_pa_s1', pendAyah === 'S1');
+            setCheck('out_pa_s2', pendAyah === 'S2');
+            setCheck('out_pa_s3', pendAyah === 'S3');
+            
+            // Pendidikan Ibu
+            let pendIbu = document.getElementById('in_pend_ibu').value;
+            setCheck('out_pi_sd', pendIbu === 'SD');
+            setCheck('out_pi_smp', pendIbu === 'SMP');
+            setCheck('out_pi_sma', pendIbu === 'SMA');
+            setCheck('out_pi_d1', pendIbu === 'D1');
+            setCheck('out_pi_d2', pendIbu === 'D2');
+            setCheck('out_pi_d3', pendIbu === 'D3');
+            setCheck('out_pi_s1', pendIbu === 'S1');
+            setCheck('out_pi_s2', pendIbu === 'S2');
+            setCheck('out_pi_s3', pendIbu === 'S3');
+
+            // Pekerjaan Ayah
+            let pekAyah = document.getElementById('in_pek_ayah').value;
+            setCheck('out_joba_tani', pekAyah === 'Petani');
+            setCheck('out_joba_nelayan', pekAyah === 'Nelayan');
+            setCheck('out_joba_guru', pekAyah === 'Guru');
+            setCheck('out_joba_pns', pekAyah === 'PNS');
+            setCheck('out_joba_swasta', pekAyah === 'Swasta');
+            setCheck('out_joba_wira', pekAyah === 'Wirausaha');
+            setCheck('out_joba_buruh', pekAyah === 'Buruh');
+            setCheck('out_joba_lain', pekAyah === 'Lainnya');
+            
+            // --- LOGIKA TEKS PEKERJAAN LAINNYA (UPDATE FITUR GARIS OTOMATIS) ---
+            let valPek = document.getElementById('in_pek_ayah').value;
+            let divLain = document.getElementById('out_joba_lain_text'); // Ambil elemen wadahnya
+
+            if (valPek === 'Lainnya') {
+                let textLain = document.getElementById('in_pek_ayah_lain').value;
+                
+                // 1. Isi teksnya
+                divLain.innerText = textLain.toUpperCase();
+                
+                // 2. MUNCULKAN garis titik-titik
+                divLain.style.borderBottom = "1px dotted black"; 
+            } else {
+                // 1. Kosongkan teks
+                divLain.innerText = "";
+                
+                // 2. HILANGKAN garis titik-titik
+                divLain.style.borderBottom = "none";
+            }
+
+            // Tanggal Hari Ini (Footer)
+            const today = new Date();
+            const dateStr = today.getDate() + ' - ' + (today.getMonth()+1) + ' - ' + today.getFullYear();
+            document.getElementById('current_date').innerText = dateStr;
+
+            window.print();
+        }
+    </script>
+</body>
+</html>
